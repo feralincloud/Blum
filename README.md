@@ -137,6 +137,6 @@ Click the following url to register : [Blum Bot](https://t.me/blum/app?startapp=
 
 then only copy `query_id` and  paste `query.txt` file
 
-<a href="https://ibb.co/WHM0BZP"><img src="https://i.ibb.co/vcThLpQ/In-Shot-20240902-194551387.jpg" alt="In-Shot-20240902-194551387" border="0"></a><br /><a target='_blank' href='https://imgbb.com/'>imghost</a><br />
+<a href="https://ibb.co/WHM0BZP"><img src="https://i.ibb.co/WHM0BZP/In-Shot-20240902-194551387.jpg" alt="In-Shot-20240902-194551387" border="0"></a>
 
 # Thank you
