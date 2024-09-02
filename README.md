@@ -3,7 +3,7 @@
 Auto Claim for Blum Telegram Bot
 
 # Watch Video Tutorial
-[Click Here](https://youtu.be/6ZPwzPVNArU)
+[Click Here](https://youtu.be/SoN_U7EO2XQ)
 
 # Features
 
