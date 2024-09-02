@@ -45,11 +45,10 @@ Click the following url to register : [Blum Bot](https://t.me/blum/app?startapp=
    ```
    python -m pip install -r pip.txt
    ```
-5. Add proxy on `proxy.txt` file Proxy Formate `[user:pass@ip:port]`
 
-6. Edit `data.txt`, input you auth token in `data.txt` file
+5. Edit `data.txt`, input you auth token in `data.txt` file
 
-7. execute the main program 
+6. execute the main program 
    ```
    python Blum.py
    ```
@@ -85,11 +84,9 @@ Click the following url to register : [Blum Bot](https://t.me/blum/app?startapp=
    python3 -m pip install -r pip.txt
    ```
 
-5. Edit `data.txt`, input you auth token in `data.txt` file
+5. Add proxy on `proxy.txt` file Proxy Formate `[user:pass@ip:port]`
 
-6. Add proxy on `proxy.txt` file Proxy Formate `[user:pass@ip:port]`
-
-7. execute the main program 
+6. execute the main program 
    ```
    python Blum.py
    ```
@@ -122,9 +119,8 @@ Click the following url to register : [Blum Bot](https://t.me/blum/app?startapp=
    ```
    python -m pip install -r pip.txt
    ```
-
-5. Edit `data.txt`, input you auth token in `data.txt` file
-
+5. Add proxy on `proxy.txt` file Proxy Formate `[user:pass@ip:port]`
+   
 6. execute the main program 
    ```
    python Blum.py
