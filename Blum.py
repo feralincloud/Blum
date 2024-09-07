@@ -375,59 +375,55 @@ def format_timedelta(td):
     minutes, seconds = divmod(remainder, 60)
     return f"{hours}:{minutes}:{seconds}"
 
-def countdown(remaining_time):
-    while remaining_time > timedelta(seconds=0):
-        print(f"{Fore.WHITE+ Style.BRIGHT}Wait {Fore.WHITE+ Style.BRIGHT}{format_timedelta(remaining_time)}", end='\r')
-        time.sleep(1)  # Sleep for 1 second
-        remaining_time -= timedelta(seconds=1)
-    print("Time's up!                          ")  # To clear the last line
+def countdown_timer(seconds):
+    while seconds > 0:
+        mins, secs = divmod(seconds, 60)
+        hours, mins = divmod(mins, 60)
+        print(f"{Fore.CYAN + Style.BRIGHT}Wait {hours:02}:{mins:02}:{secs:02}", end='\r')
+        time.sleep(1)
+        seconds -= 1
+    print("Wait 00:00:00          ", end='\r')  # Clear the countdown message
+
+import time
 
 def main():
-    query_ids = get_query_ids_from_file('data.txt')
-    clear_terminal()
-    art()
-    remaining_times = []
-
-    for index, query_id in enumerate(query_ids):
-        if query_id:
-            token = get_new_token(query_id)
-            if token:
-                token_file = 'token.txt'
-                save_token(token, token_file)
-                get_balance(token, index + 1)
-                claim_farming(token)
-                farming_end_time = start_farming(token)
-                if farming_end_time:
-                    remaining_time = farming_end_time - datetime.now()
-                    remaining_times.append(remaining_time)
-                claim_ref(token)
-
-                while True:
-                    current_balance, play_passes = new_balance(token)
-                    if current_balance is None or play_passes is None:
-                        print(f"{Fore.RED + Style.BRIGHT}Failed to retrieve balance or play passes.")
-                        break
-
-                    if play_passes > 0:
-                        print(f"{Fore.CYAN + Style.BRIGHT}Play Passes Available: {play_passes}")
-                        game_id = play_game(token)
-                        if game_id:
-                            claim_game(token, game_id)
-                    else:
-                        print(f"{Fore.RED + Style.BRIGHT}Play Pass is 0")
-                        break
-
-                get_daily_reward(token)
-            else:
-                print(f"{Fore.RED + Style.BRIGHT}Account No.{index + 1}: Token generation failed.")
-        else:
-            print(f"{Fore.RED + Style.BRIGHT}Account No.{index + 1}: Query ID not found.")
-
-    if remaining_times:
-        shortest_time = min(remaining_times)
-        countdown(shortest_time)
+    while True:
+        query_ids = get_query_ids_from_file('data.txt')
         clear_terminal()
         art()
-    
+
+        for index, query_id in enumerate(query_ids):
+            if query_id:
+                token = get_new_token(query_id)
+                if token:
+                    token_file = 'token.txt'
+                    save_token(token, token_file)
+                    get_balance(token, index + 1)
+                    claim_farming(token)
+                    start_farming(token)
+                    claim_ref(token)
+                    while True:
+                        current_balance, play_passes = new_balance(token)
+                        if current_balance is None or play_passes is None:
+                            print(f"{Fore.RED + Style.BRIGHT}Failed to retrieve balance or play passes.")
+                            break
+                        if play_passes > 0:
+                            print(f"{Fore.CYAN + Style.BRIGHT}Play Passes Available: {play_passes}")
+                            game_id = play_game(token)
+                            if game_id:
+                                claim_game(token, game_id)
+                        else:
+                            print(f"{Fore.RED + Style.BRIGHT}Play Pass is 0")
+                            break
+                    get_daily_reward(token)
+                else:
+                    print(f"{Fore.RED + Style.BRIGHT}Account No.{index + 1}: Token generation failed.")
+            else:
+                print(f"{Fore.RED + Style.BRIGHT}Account No.{index + 1}: Query ID not found.")
+        
+        countdown_timer(1*60*60)
+        clear_terminal()
+        art()
+        
 if __name__ == "__main__":
     main()
