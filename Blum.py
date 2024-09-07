@@ -2,6 +2,7 @@ import requests
 from datetime import datetime, timedelta
 import json
 import time
+import random
 import sys
 import os
 from colorama import Fore, Style, init
@@ -256,6 +257,118 @@ def get_daily_reward(token):
       else:
         print(f"{Fore.RED+ Style.BRIGHT}Response Status Code: {response.status_code}")
 
+def claim_ref(token):
+    url = "https://user-domain.blum.codes/api/v1/friends/claim"
+    headers = {
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9",
+        "authorization": f"Bearer {token}",
+        "sec-ch-ua": "\"Chromium\";v=\"111\", \"Not(A:Brand\";v=\"8\"",
+        "sec-ch-ua-mobile": "?1",
+        "sec-ch-ua-platform": "\"Android\"",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site"
+    }
+
+    try:
+        response = requests.post(url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        ref_balance = data.get("claimBalance")
+    except requests.exceptions.RequestException as e:
+      if response.status_code == 200:
+        print(f"{Fore.GREEN+ Style.BRIGHT}Referral Bonus Claimed Successfully")
+        print(f"{Fore.GREEN+ Style.BRIGHT}Referral Bonus: {ref_balance}")
+      elif response.status_code == 400:
+        print(f"{Fore.RED+ Style.BRIGHT}Referral Bonus Already Claimed")
+      else:
+        print(f"{Fore.RED+ Style.BRIGHT}Response Status Code: {response.status_code}")
+
+def new_balance(token):
+    url = "https://game-domain.blum.codes/api/v1/user/balance"
+    headers = {
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9",
+        "authorization": f"Bearer {token}",
+        "sec-ch-ua": "\"Chromium\";v=\"111\", \"Not(A:Brand\";v=\"8\"",
+        "sec-ch-ua-mobile": "?1",
+        "sec-ch-ua-platform": "\"Android\"",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site"
+    }
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Check for HTTP errors
+        data_balance = response.json()
+
+        new_balance = data_balance.get("availableBalance", "N/A")
+        play_passes = data_balance.get("playPasses", 0)  # Default to 0 if not found
+
+        return new_balance, play_passes       
+    except requests.exceptions.RequestException as e:
+        print(f"{Fore.RED + Style.BRIGHT}Request failed: {e}")
+        return None, None
+
+def play_game(token):
+    url = "https://game-domain.blum.codes/api/v1/game/play"
+    headers = {
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9",
+        "authorization": f"Bearer {token}",
+        "sec-ch-ua": "\"Chromium\";v=\"111\", \"Not(A:Brand\";v=\"8\"",
+        "sec-ch-ua-mobile": "?1",
+        "sec-ch-ua-platform": "\"Android\"",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site"
+    }
+
+    try:
+        response = requests.post(url, headers=headers)
+        response.raise_for_status()  # Raises error for bad status codes
+        data = response.json()
+        gameid = data.get("gameId")
+
+        if gameid:
+            print(f"{Fore.YELLOW + Style.BRIGHT}Game Started....")
+            time.sleep(32)
+            return gameid
+        else:
+            print("Game ID not found in the response.")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        return None
+
+def claim_game(token, gameId):
+    url = "https://game-domain.blum.codes/api/v1/game/claim"
+    headers = {
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9",
+        "authorization": f"Bearer {token}",
+        "sec-ch-ua": "\"Chromium\";v=\"111\", \"Not(A:Brand\";v=\"8\"",
+        "sec-ch-ua-mobile": "?1",
+        "sec-ch-ua-platform": "\"Android\"",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site"
+    }
+    points = random.randint(256, 278)
+    
+    body = {"gameId": gameId, "points": points}
+
+    try:
+        response = requests.post(url, headers=headers, json=body)
+        response.raise_for_status()
+        if response.status_code == 200:
+        	print(f"{Fore.GREEN + Style.BRIGHT}Game Reward Claimed")      	
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        return None
+
 def format_timedelta(td):
     total_seconds = int(td.total_seconds())
     hours, remainder = divmod(total_seconds, 3600)
@@ -279,7 +392,7 @@ def main():
         if query_id:
             token = get_new_token(query_id)
             if token:
-                token_file = f'token.txt'
+                token_file = 'token.txt'
                 save_token(token, token_file)
                 get_balance(token, index + 1)
                 claim_farming(token)
@@ -287,11 +400,28 @@ def main():
                 if farming_end_time:
                     remaining_time = farming_end_time - datetime.now()
                     remaining_times.append(remaining_time)
+                claim_ref(token)
+
+                while True:
+                    current_balance, play_passes = new_balance(token)
+                    if current_balance is None or play_passes is None:
+                        print(f"{Fore.RED + Style.BRIGHT}Failed to retrieve balance or play passes.")
+                        break
+
+                    if play_passes > 0:
+                        print(f"{Fore.CYAN + Style.BRIGHT}Play Passes Available: {play_passes}")
+                        game_id = play_game(token)
+                        if game_id:
+                            claim_game(token, game_id)
+                    else:
+                        print(f"{Fore.RED + Style.BRIGHT}Play Pass is 0")
+                        break
+
                 get_daily_reward(token)
             else:
-                print(f"{Fore.RED+ Style.BRIGHT}Account No.{index + 1}: Token generation failed.")
+                print(f"{Fore.RED + Style.BRIGHT}Account No.{index + 1}: Token generation failed.")
         else:
-            print(f"{Fore.RED+ Style.BRIGHT}Account No.{index + 1}: Query ID not found.")
+            print(f"{Fore.RED + Style.BRIGHT}Account No.{index + 1}: Query ID not found.")
 
     if remaining_times:
         shortest_time = min(remaining_times)
