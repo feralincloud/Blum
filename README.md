@@ -11,7 +11,7 @@ Auto Claim for Blum Telegram Bot
 - [x] Auto Start Farming
 - [x] Auto Referral Bonus Claim
 - [x] Auto Task Complete
-- [x] Auto Play Game and Claim Game Reward
+- [x] Auto Play Game and Claim Reward
 - [x] Auto Daily Bonus Claim
 - [x] Multi Account Support
 
