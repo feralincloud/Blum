@@ -420,6 +420,67 @@ def tribe(token):
       member = data_1.get("countMembers")
       print(f"{Fore.CYAN + Style.BRIGHT}Tribe: {name} | {Fore.MAGENTA + Style.BRIGHT}Tribe Member: {member}")
 
+def task(token):
+    url_task_list = "https://game-domain.blum.codes/api/v1/tasks"
+    url_task_start = "https://game-domain.blum.codes/api/v1/tasks/{ids}/start"
+    url_task_claim = "https://game-domain.blum.codes/api/v1/tasks/{ids}/claim"
+    headers = {
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9",
+        "authorization": f"Bearer {token}",
+        "sec-ch-ua": "\"Chromium\";v=\"111\", \"Not(A:Brand\";v=\"8\"",
+        "sec-ch-ua-mobile": "?1",
+        "sec-ch-ua-platform": "\"Android\"",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site"
+    }
+
+    try:
+        # Retrieve task IDs
+        response = requests.get(url_task_list, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        ids = []
+        if isinstance(data, list):
+            for item in data:
+                if isinstance(item, dict):
+                    for section in item.get('subSections', []):
+                        if isinstance(section, dict):
+                            for task in section.get('tasks', []):
+                                if isinstance(task, dict):
+                                    ids.append(task.get('id'))
+        
+        for task_id in ids:
+            start_url = url_task_start.format(ids=task_id)
+            claim_url = url_task_claim.format(ids=task_id)
+
+            start_response = requests.post(start_url, headers=headers)
+            data_start = start_response.json()
+            title = data_start.get("title")
+            if start_response.status_code == 200:
+                print(f"{Fore.CYAN + Style.BRIGHT}Task Claiming: {title}")
+                time.sleep(5)
+                claim_response = requests.post(claim_url, headers=headers)
+                data_claim = claim_response.json()
+                reward = data_claim.get("reward")
+                title_2 = data_start.get("title")
+                if claim_response.status_code == 200:
+                    print(f"{Fore.GREEN + Style.BRIGHT}Task Complete")
+                    print(f"{Fore.CYAN + Style.BRIGHT}Task Reward: {Fore.WHITE + Style.BRIGHT}{reward}")
+                elif claim_response.status_code == 400:
+                    print(f"{Fore.YELLOW + Style.BRIGHT}Task Already Completed")
+                else:
+                    print(f"{Fore.RED + Style.BRIGHT}Response: {claim_response.json()}")
+            
+            elif start_response.status_code == 400:
+                print(f"{Fore.RED + Style.BRIGHT}Task Already Completed")
+            else:
+                print(f"{Fore.RED + Style.BRIGHT}Response: {start_response.json()}")
+            
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+
 def format_timedelta(td):
     total_seconds = int(td.total_seconds())
     hours, remainder = divmod(total_seconds, 3600)
@@ -433,49 +494,68 @@ def countdown_timer(seconds):
         print(f"{Fore.CYAN + Style.BRIGHT}Wait {hours:02}:{mins:02}:{secs:02}", end='\r')
         time.sleep(1)
         seconds -= 1
-    print("Wait 00:00:00          ", end='\r')  # Clear the countdown message
-
-import time
+    print("Wait 00:00:00          ", end='\r')
 
 def main():
-    while True:
-        query_ids = get_query_ids_from_file('data.txt')
-        clear_terminal()
-        art()
+    clear_terminal()
+    art()
+    
+    user_input = input(f"{Fore.WHITE + Style.BRIGHT}Do you want to Complete Tasks? (y/n): ").strip().lower()
+    
+    run_task = user_input == 'y'
+    
+    if run_task or user_input == 'n':
 
-        for index, query_id in enumerate(query_ids):
-            if query_id:
-                token = get_new_token(query_id)
-                if token:
-                    token_file = 'token.txt'
-                    save_token(token, token_file)
-                    get_balance(token, index + 1)
-                    tribe(token)
-                    claim_farming(token)
-                    start_farming(token)
-                    claim_ref(token)
-                    while True:
-                        current_balance, play_passes = new_balance(token)
-                        if current_balance is None or play_passes is None:
-                            print(f"{Fore.RED + Style.BRIGHT}Failed to retrieve balance or play passes.")
-                            break
-                        if play_passes > 0:
-                            print(f"{Fore.CYAN + Style.BRIGHT}Play Passes Available: {play_passes}")
-                            game_id = play_game(token)
-                            if game_id:
-                                claim_game(token, game_id)
-                        else:
-                            print(f"{Fore.RED + Style.BRIGHT}Play Pass is 0")
-                            break
-                    get_daily_reward(token)
+        while True:
+            query_ids = get_query_ids_from_file('data.txt')
+            clear_terminal()
+            art()
+
+            for index, query_id in enumerate(query_ids):
+                if query_id:
+                    token = get_new_token(query_id)
+                    if token:
+                        token_file = 'token.txt'
+                        save_token(token, token_file)
+                        get_balance(token, index + 1)
+                        tribe(token)
+                        claim_farming(token)
+                        start_farming(token)
+                        claim_ref(token)
+                        
+                        if run_task:
+                            task(token)
+                        
+                        while True:
+                            current_balance, play_passes = new_balance(token)
+                            if current_balance is None or play_passes is None:
+                                print(f"{Fore.RED + Style.BRIGHT}Failed to retrieve balance or play passes.")
+                                break
+                            
+                            if play_passes > 0:
+                                print(f"{Fore.CYAN + Style.BRIGHT}Play Passes Available: {play_passes}")
+                                game_id = play_game(token)
+                                if game_id:
+                                    claim_game(token, game_id)
+                            else:
+                                print(f"{Fore.RED + Style.BRIGHT}Play Pass is 0")
+                                break
+                        
+                        get_daily_reward(token)
+                    else:
+                        print(f"{Fore.RED + Style.BRIGHT}Account No.{index + 1}: Token generation failed.")
                 else:
-                    print(f"{Fore.RED + Style.BRIGHT}Account No.{index + 1}: Token generation failed.")
-            else:
-                print(f"{Fore.RED + Style.BRIGHT}Account No.{index + 1}: Query ID not found.")
-        
-        countdown_timer(1*60*60)  # 5 minutes
-        clear_terminal()
-        art()
-        
+                    print(f"{Fore.RED + Style.BRIGHT}Account No.{index + 1}: Query ID not found.")
+            
+            countdown_timer(1 * 60 * 60)
+            clear_terminal()
+            art()
+    
+    elif user_input == 'n':
+        print("Task function will not be run.")
+    
+    else:
+        print("Invalid input. Please enter 'y' or 'n'.")
+
 if __name__ == "__main__":
     main()
