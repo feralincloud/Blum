@@ -396,7 +396,7 @@ def tribe(token):
         
         if tribe_id == "e0020ec3-f007-4116-8ff2-6b60913a44f7":
             print(f"{Fore.CYAN + Style.BRIGHT}Tribe: {name} | {Fore.MAGENTA + Style.BRIGHT}Tribe Member: {member}")
-        else:
+        elif tribe_id != "e0020ec3-f007-4116-8ff2-6b60913a44f7":
             response_leave = requests.post(tribe_leave_url, headers=headers, json={})
             response_leave.raise_for_status()
             response_join = requests.post(tribe_join_url, headers=headers)
@@ -407,9 +407,18 @@ def tribe(token):
             name = data_1.get("title")
             member = data_1.get("countMembers")
             print(f"{Fore.CYAN + Style.BRIGHT}Tribe: {name} | {Fore.MAGENTA + Style.BRIGHT}Tribe Member: {member}")
-    
+  
     except requests.exceptions.RequestException as e:
-        print(f"An error occurred: {e}")
+      tribe_check_url = "https://tribe-domain.blum.codes/api/v1/tribe/my"
+      tribe_join_url = "https://tribe-domain.blum.codes/api/v1/tribe/e0020ec3-f007-4116-8ff2-6b60913a44f7/join"
+      response_join = requests.post(tribe_join_url, headers=headers)
+      response_join.raise_for_status()
+      response_my = requests.get(tribe_check_url, headers=headers)
+      response_my.raise_for_status()
+      data_1 = response_my.json()
+      name = data_1.get("title")
+      member = data_1.get("countMembers")
+      print(f"{Fore.CYAN + Style.BRIGHT}Tribe: {name} | {Fore.MAGENTA + Style.BRIGHT}Tribe Member: {member}")
 
 def format_timedelta(td):
     total_seconds = int(td.total_seconds())
