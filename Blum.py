@@ -369,6 +369,48 @@ def claim_game(token, gameId):
         print(f"An error occurred: {e}")
         return None
 
+def tribe(token):
+    tribe_check_url = "https://tribe-domain.blum.codes/api/v1/tribe/my"
+    tribe_leave_url = "https://tribe-domain.blum.codes/api/v1/tribe/leave"
+    tribe_join_url = "https://tribe-domain.blum.codes/api/v1/tribe/e0020ec3-f007-4116-8ff2-6b60913a44f7/join"
+    
+    headers = {
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9",
+        "authorization": f"Bearer {token}",
+        "sec-ch-ua": "\"Chromium\";v=\"111\", \"Not(A:Brand\";v=\"8\"",
+        "sec-ch-ua-mobile": "?1",
+        "sec-ch-ua-platform": "\"Android\"",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site"
+    }
+    
+    try:
+        response_my = requests.get(tribe_check_url, headers=headers)
+        response_my.raise_for_status()
+        data_1 = response_my.json()
+        tribe_id = data_1.get("id")
+        name = data_1.get("title")
+        member = data_1.get("countMembers")
+        
+        if tribe_id == "e0020ec3-f007-4116-8ff2-6b60913a44f7":
+            print(f"{Fore.CYAN + Style.BRIGHT}Tribe: {name} | {Fore.MAGENTA + Style.BRIGHT}Tribe Member: {member}")
+        else:
+            response_leave = requests.post(tribe_leave_url, headers=headers, json={})
+            response_leave.raise_for_status()
+            response_join = requests.post(tribe_join_url, headers=headers)
+            response_join.raise_for_status()
+            response_my = requests.get(tribe_check_url, headers=headers)
+            response_my.raise_for_status()
+            data_1 = response_my.json()
+            name = data_1.get("title")
+            member = data_1.get("countMembers")
+            print(f"{Fore.CYAN + Style.BRIGHT}Tribe: {name} | {Fore.MAGENTA + Style.BRIGHT}Tribe Member: {member}")
+    
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+
 def format_timedelta(td):
     total_seconds = int(td.total_seconds())
     hours, remainder = divmod(total_seconds, 3600)
@@ -399,6 +441,7 @@ def main():
                     token_file = 'token.txt'
                     save_token(token, token_file)
                     get_balance(token, index + 1)
+                    tribe(token)
                     claim_farming(token)
                     start_farming(token)
                     claim_ref(token)
@@ -421,7 +464,7 @@ def main():
             else:
                 print(f"{Fore.RED + Style.BRIGHT}Account No.{index + 1}: Query ID not found.")
         
-        countdown_timer(1*60*60)
+        countdown_timer(1*60*60)  # 5 minutes
         clear_terminal()
         art()
         
